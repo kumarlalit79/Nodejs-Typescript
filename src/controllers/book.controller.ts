@@ -54,11 +54,11 @@ export const updateBook = async (req: Request, res: Response) => {
     const { name, author, publishYear, description } = req.body;
     const { id } = req.params;
 
-    if(!id) {
-        return res.status(400).json({
-            success: false,
-            message: "Id not found!"
-        }) 
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Id not found!",
+      });
     }
 
     const book = await Book.findByIdAndUpdate(
@@ -67,11 +67,11 @@ export const updateBook = async (req: Request, res: Response) => {
       { new: true },
     );
 
-    if(!book) {
-        return res.status(404).json({
-            success: false,
-            message: "No books not found!"
-        }) 
+    if (!book) {
+      return res.status(404).json({
+        success: false,
+        message: "No books not found!",
+      });
     }
 
     return res.status(200).json({
@@ -79,7 +79,29 @@ export const updateBook = async (req: Request, res: Response) => {
       book,
       success: true,
     });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: `Error in Update Books! ${error.message}`,
+      success: false,
+    });
+  }
+};
 
+export const deleteBook = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({
+        message: "Id not found!",
+        success: false,
+      });
+    }
+
+    const book = await Book.findByIdAndDelete(id);
+    return res.status(200).json({
+      message: "Book deleted successfully",
+      success: true,
+    });
   } catch (error: any) {
     return res.status(500).json({
       message: `Error in Update Books! ${error.message}`,
