@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import User from "../models/User.js";
 import bcrypt from "bcrypt";
+import jwt, { type Secret } from "jsonwebtoken";
 
 export const signup = async (req: Request, res: Response) => {
   try {
@@ -70,15 +71,21 @@ export const signin = async (req: Request, res: Response) => {
       });
     }
 
-    const hashedPassword = await bcrypt.compare(password, user.password);
-    if (!hashedPassword) {
+    const comparePassword = await bcrypt.compare(password, user.password);
+    if (!comparePassword) {
       return res.status(400).json({
         message: "Password is wrong",
         success: false,
       });
     }
 
-    return res.status(200).json({
+    const payload = {
+      id: user._id,
+      role: user.roles,
+    };
+    const token = jwt.sign(payload, process.env.MYSECRET as Secret, { expiresIn: "7d" });
+
+    return res.status(200).cookie("token", token).json({
       message: "Login success",
       user,
       success: true,
