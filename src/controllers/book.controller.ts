@@ -1,5 +1,6 @@
 import express, { type Request, type Response } from "express";
 import Book from "../models/Books.js";
+import { ROLES } from "../utils/role.js";
 
 export const getBooks = async (req: Request, res: Response) => {
   try {
@@ -26,6 +27,14 @@ export const getBooks = async (req: Request, res: Response) => {
 
 export const addBooks = async (req: Request, res: Response) => {
   try {
+    
+    if (![ROLES.creator, ROLES.admin].includes(req.role as string)) {
+      return res.status(400).json({
+        success: false,
+        message: "You don't have permission to add book!",
+      });
+    }
+
     const { name, author, publishYear, description } = req.body;
 
     if (!name || !author || !publishYear || !description) {
