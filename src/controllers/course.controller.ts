@@ -48,6 +48,10 @@ export const createCourse = async (req: Request, res: Response) => {
     }
 
     const course = await Course.create({ courseName, duration, location });
+
+    // DELETING CACHE
+    await redis.del("courses:all")
+
     return res.status(201).json({
       message: "Course created successfully",
       course,
@@ -56,6 +60,66 @@ export const createCourse = async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(500).json({
       message: `Create course error : ${error}`,
+      success: false,
+    });
+  }
+};
+
+
+export const updateCourse = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const course = await Course.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+
+    if (!course) {
+      return res.status(404).json({
+        message: "Course not found",
+        success: false,
+      });
+    }
+
+    // clear cache
+    await redis.del("courses:all");
+
+    return res.status(200).json({
+      message: "Course updated successfully",
+      course,
+      success: true,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: `Update course error : ${error}`,
+      success: false,
+    });
+  }
+};
+
+export const deleteCourse = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const course = await Course.findByIdAndDelete(id);
+
+    if (!course) {
+      return res.status(404).json({
+        message: "Course not found",
+        success: false,
+      });
+    }
+
+    // clear cache
+    await redis.del("courses:all");
+
+    return res.status(200).json({
+      message: "Course deleted successfully",
+      success: true,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: `Delete course error : ${error}`,
       success: false,
     });
   }
