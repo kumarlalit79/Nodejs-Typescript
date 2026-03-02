@@ -83,7 +83,9 @@ export const signin = async (req: Request, res: Response) => {
       id: user._id,
       role: user.roles,
     };
-    const token = jwt.sign(payload, process.env.MYSECRET as Secret, { expiresIn: "7d" });
+    const token = jwt.sign(payload, process.env.MYSECRET as Secret, {
+      expiresIn: "7d",
+    });
 
     return res.status(200).cookie("token", token).json({
       message: "Login success",
@@ -93,6 +95,20 @@ export const signin = async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(500).json({
       message: `Error in Signin! ${error.message}`,
+      success: false,
+    });
+  }
+};
+
+export const logout = async (req: Request, res: Response) => {
+  try {
+    return res.status(200).clearCookie("token").json({
+      success: true,
+      message: "Logout successfull",
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      message: `Error in Logout! ${error.message}`,
       success: false,
     });
   }
